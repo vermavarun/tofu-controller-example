@@ -150,18 +150,36 @@ else
     print_status 0 "AZURE_TENANT_ID is set"
 fi
 
-if [ -z "$AZURE_CLIENT_ID" ]; then
-    print_status 1 "AZURE_CLIENT_ID not set"
-    MISSING_VARS=1
-else
-    print_status 0 "AZURE_CLIENT_ID is set"
-fi
+# Check authentication method
+if [ "$AZURE_USE_CLI" = "true" ]; then
+    echo -e "${YELLOW}ℹ${NC}  Using Azure CLI authentication"
+    print_status 0 "AZURE_USE_CLI is set to true"
 
-if [ -z "$AZURE_CLIENT_SECRET" ]; then
-    print_status 1 "AZURE_CLIENT_SECRET not set"
-    MISSING_VARS=1
+    # Check if logged in to Azure CLI
+    if az account show >/dev/null 2>&1; then
+        print_status 0 "Azure CLI is authenticated"
+    else
+        print_status 1 "Azure CLI is not authenticated"
+        echo -e "${YELLOW}  Run: az login${NC}"
+        MISSING_VARS=1
+    fi
 else
-    print_status 0 "AZURE_CLIENT_SECRET is set"
+    # Service Principal authentication - require credentials
+    if [ -z "$AZURE_CLIENT_ID" ]; then
+        print_status 1 "AZURE_CLIENT_ID not set (required for Service Principal auth)"
+        echo -e "${YELLOW}  Or set AZURE_USE_CLI=true to use CLI auth${NC}"
+        MISSING_VARS=1
+    else
+        print_status 0 "AZURE_CLIENT_ID is set"
+    fi
+
+    if [ -z "$AZURE_CLIENT_SECRET" ]; then
+        print_status 1 "AZURE_CLIENT_SECRET not set (required for Service Principal auth)"
+        echo -e "${YELLOW}  Or set AZURE_USE_CLI=true to use CLI auth${NC}"
+        MISSING_VARS=1
+    else
+        print_status 0 "AZURE_CLIENT_SECRET is set"
+    fi
 fi
 
 echo ""
@@ -176,6 +194,16 @@ else
     echo -e "${YELLOW}  Please install the missing tools and set environment variables.${NC}"
     echo ""
     echo "Quick setup commands:"
+    echo ""
+    echo "For Azure CLI authentication (easiest):"
+    echo "  export GITHUB_TOKEN=your-github-token"
+    echo "  export GITHUB_USER=your-github-username"
+    echo "  export AZURE_SUBSCRIPTION_ID=your-subscription-id"
+    echo "  export AZURE_TENANT_ID=your-tenant-id"
+    echo "  export AZURE_USE_CLI=true"
+    echo "  az login"
+    echo ""
+    echo "For Service Principal authentication:"
     echo "  export GITHUB_TOKEN=your-github-token"
     echo "  export GITHUB_USER=your-github-username"
     echo "  export AZURE_SUBSCRIPTION_ID=your-subscription-id"

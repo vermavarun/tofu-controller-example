@@ -9,9 +9,84 @@ Get up and running with Flux Tofu-Controller in 10 minutes!
 - [ ] Flux CLI installed
 - [ ] Azure CLI installed
 - [ ] GitHub account and personal access token
-- [ ] Azure subscription and service principal
+- [ ] Azure subscription (choose one auth method below)
 
-## 5-Minute Setup
+## Choose Your Authentication Method
+
+### 🎯 Option 1: Azure CLI (Easiest - Recommended for Demo)
+
+✅ **Use this if:** You can run `az login` and want to get started quickly
+
+**Pros:**
+- No service principal setup needed
+- Uses your existing Azure credentials
+- Automatic service principal creation for Kubernetes
+
+**Cons:**
+- Creates a temporary service principal
+- Not recommended for production
+
+### 🔐 Option 2: Service Principal (Production-Ready)
+
+✅ **Use this if:** You have or can create a service principal
+
+**Pros:**
+- Full control over credentials
+- Best for production environments
+- No automatic resource creation
+
+**Cons:**
+- Requires manual service principal creation
+- Need admin permissions to create SP
+
+---
+
+## 5-Minute Setup - Azure CLI Method
+
+### 1. Clone and Navigate
+```bash
+cd /path/to/tofu-controller-example
+```
+
+### 2. Login to Azure
+```bash
+az login
+# Select your subscription if you have multiple
+```
+
+### 3. Run Automated Setup
+```bash
+./scripts/00-setup-azure-cli-auth.sh
+```
+
+This script will:
+- ✅ Check Azure CLI authentication
+- ✅ Select your subscription
+- ✅ Create a `.env` file with your configuration
+
+### 4. Configure GitHub Token
+```bash
+# Edit .env and add your GitHub token
+nano .env  # or use your favorite editor
+
+# Update this line:
+# export GITHUB_TOKEN="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
+
+Get a token from: https://github.com/settings/tokens (needs `repo` scope)
+
+### 5. Load Environment and Run
+```bash
+# Load the environment variables
+source .env
+
+# Run the demo
+./scripts/99-run-demo.sh
+```
+
+---
+
+## 5-Minute Setup - Service Principal Method
 
 ### 1. Clone and Navigate
 ```bash
@@ -47,6 +122,36 @@ This script will:
 3. 📦 Install Tofu-Controller
 4. 🔐 Create Azure secrets
 5. 🏗️ Deploy infrastructure
+
+### 1. Create Service Principal
+```bash
+# Create a service principal
+az ad sp create-for-rbac --name "tofu-controller-sp" \
+  --role Contributor \
+  --scopes /subscriptions/YOUR_SUBSCRIPTION_ID
+
+# Note the output - you'll need:
+# - appId (Client ID)
+# - password (Client Secret)
+# - tenant (Tenant ID)
+```
+
+### 2. Set Environment Variables
+```bash
+export GITHUB_TOKEN="your-github-token"
+export GITHUB_USER="your-username"
+export AZURE_SUBSCRIPTION_ID="your-sub-id"
+export AZURE_TENANT_ID="your-tenant-id"
+export AZURE_CLIENT_ID="your-client-id"
+export AZURE_CLIENT_SECRET="your-secret"
+```
+
+### 3. Run the Demo
+```bash
+./scripts/99-run-demo.sh
+```
+
+---
 
 ## What Happens Next?
 

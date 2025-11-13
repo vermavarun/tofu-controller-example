@@ -13,6 +13,7 @@ This repository demonstrates how to use [Flux Tofu-Controller](https://flux-iac.
 - [Drift Detection](#drift-detection)
 - [Cleanup](#cleanup)
 - [Troubleshooting](#troubleshooting)
+- [Additional Resources](#additional-resources)
 
 ## 🎯 Overview
 
@@ -78,12 +79,29 @@ Tofu-Controller is a Flux controller that reconciles Terraform and OpenTofu reso
 
 ### Azure Requirements
 
+**Choose ONE of the following authentication methods:**
+
+#### Option 1: Azure CLI Authentication (Easiest for Demo/Testing)
+- **Azure CLI installed** and authenticated (`az login`)
+- **Active Azure subscription**
+- **Contributor access** to the subscription
+
+This option uses your personal Azure credentials and automatically creates a temporary service principal for Kubernetes.
+
+#### Option 2: Service Principal (Recommended for Production)
 - **Azure Subscription**: Active subscription with contributor access
 - **Service Principal**: With permissions to create resources
-  - Application ID
+  - Application ID (Client ID)
   - Client Secret
   - Tenant ID
   - Subscription ID
+
+To create a service principal:
+```bash
+az ad sp create-for-rbac --name "tofu-controller-sp" \
+  --role Contributor \
+  --scopes /subscriptions/YOUR_SUBSCRIPTION_ID
+```
 
 ### Install Prerequisites Script
 
@@ -95,11 +113,32 @@ Run the prerequisite setup script:
 
 ## 🚀 Quick Start
 
-For the impatient, run the automated setup:
+**Choose your authentication method:**
+
+### Quick Start - Option 1: Azure CLI Authentication (Recommended for Beginners)
 
 ```bash
-# 1. Check prerequisites
-./scripts/00-setup-prerequisites.sh
+# 1. Login to Azure
+az login
+
+# 2. Run the automated setup script
+./scripts/00-setup-azure-cli-auth.sh
+
+# 3. Edit .env and add your GitHub token
+# Then load the environment
+source .env
+
+# 4. Run the complete demo
+./scripts/99-run-demo.sh
+```
+
+### Quick Start - Option 2: Service Principal
+
+```bash
+# 1. Create a service principal
+az ad sp create-for-rbac --name "tofu-controller-sp" \
+  --role Contributor \
+  --scopes /subscriptions/YOUR_SUBSCRIPTION_ID
 
 # 2. Set your environment variables
 export GITHUB_TOKEN="your-github-token"
@@ -322,10 +361,25 @@ kubectl delete pod -n flux-system -l terraform.io/terraform=<name>
 
 ## 📖 Additional Resources
 
+### 📚 Documentation Files
+
+This project includes comprehensive documentation:
+
+- **[QUICKSTART.md](QUICKSTART.md)** - Get running in 10 minutes
+- **[AZURE-AUTH.md](AZURE-AUTH.md)** - Detailed authentication guide (CLI vs Service Principal)
+- **[OVERVIEW.md](OVERVIEW.md)** - Architecture and concepts deep dive
+- **[COMMANDS.md](COMMANDS.md)** - Complete command reference
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Debug guide and common issues
+- **[SUMMARY.md](SUMMARY.md)** - Project capabilities summary
+- **[PROJECT-STATUS.md](PROJECT-STATUS.md)** - Complete project inventory
+
+### 🔗 External Resources
+
 - [Tofu-Controller Documentation](https://flux-iac.github.io/tofu-controller/)
 - [Flux Documentation](https://fluxcd.io/flux/)
 - [Terraform Azure Provider](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs)
 - [GitOps Principles](https://opengitops.dev/)
+- [Azure CLI Documentation](https://docs.microsoft.com/en-us/cli/azure/)
 
 ## 🤝 Contributing
 
