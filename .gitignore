@@ -1,0 +1,38 @@
+# OS and IDE files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.local
+.envrc
+
+# Terraform files
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*.log
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+
+# Diagnostics and logs
+diagnostics/
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+temp/
+tmp/
+
+# Scripts backup
+scripts/*.bak

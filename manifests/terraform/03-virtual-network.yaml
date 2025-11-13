@@ -1,0 +1,68 @@
+---
+# Terraform resource for Azure Virtual Network
+# This depends on the resource group being created first
+apiVersion: infra.contrib.fluxcd.io/v1alpha2
+kind: Terraform
+metadata:
+  name: azure-virtual-network
+  namespace: flux-system
+spec:
+  # Path to the Terraform module
+  path: ./terraform/03-virtual-network
+
+  # Source reference
+  sourceRef:
+    kind: GitRepository
+    name: tofu-demo
+    namespace: flux-system
+
+  # Reconciliation interval
+  interval: 10m
+
+  # Retry interval on failure
+  retryInterval: 20s
+
+  # Auto-approve plans
+  approvePlan: auto
+
+  # Destroy resources on deletion
+  destroyResourcesOnDeletion: true
+
+  # Service account
+  serviceAccountName: tf-runner
+
+  # Dependencies
+  dependsOn:
+    - name: azure-resource-group
+
+  # Azure credentials
+  envFrom:
+    - secretRef:
+        name: azure-credentials
+
+  # Variables
+  vars:
+    - name: location
+      value: eastus
+    - name: resource_group_name
+      value: tofu-demo-rg
+    - name: vnet_name
+      value: tofu-demo-vnet
+    - name: address_space
+      value: '["10.0.0.0/16"]'
+
+  # Write outputs
+  writeOutputsToSecret:
+    name: azure-vnet-outputs
+
+  # Runner pod template
+  runnerPodTemplate:
+    spec:
+      image: ghcr.io/flux-iac/tf-runner-azure:v0.16.0-rc.4
+      resources:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi

@@ -1,0 +1,16 @@
+---
+# GitRepository source pointing to this repository
+# Flux will monitor this repository for changes
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: tofu-demo
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: https://github.com/${GITHUB_USER}/${GITHUB_REPO}
+  ref:
+    branch: main
+  # For private repositories, use secretRef
+  # secretRef:
+  #   name: github-credentials

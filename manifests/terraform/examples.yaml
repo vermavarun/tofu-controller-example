@@ -1,0 +1,82 @@
+---
+# Example with Manual Plan Approval
+# This Terraform resource requires manual approval before applying
+apiVersion: infra.contrib.fluxcd.io/v1alpha2
+kind: Terraform
+metadata:
+  name: azure-manual-approval-example
+  namespace: flux-system
+spec:
+  path: ./terraform/01-resource-group
+
+  sourceRef:
+    kind: GitRepository
+    name: tofu-demo
+    namespace: flux-system
+
+  interval: 10m
+  retryInterval: 20s
+
+  # Manual approval mode - leave empty initially
+  # After plan is generated, set this to the plan ID shown in events
+  # Example: plan-main-b7f5d6a8
+  approvePlan: ""
+
+  # Don't destroy automatically
+  destroyResourcesOnDeletion: false
+
+  serviceAccountName: tf-runner
+
+  envFrom:
+    - secretRef:
+        name: azure-credentials
+
+  vars:
+    - name: location
+      value: westus
+    - name: resource_group_name
+      value: tofu-manual-demo-rg
+
+  runnerPodTemplate:
+    spec:
+      image: ghcr.io/flux-iac/tf-runner-azure:v0.16.0-rc.4
+---
+# Example with Drift Detection Only (no auto-remediation)
+apiVersion: infra.contrib.fluxcd.io/v1alpha2
+kind: Terraform
+metadata:
+  name: azure-drift-detection-only
+  namespace: flux-system
+spec:
+  path: ./terraform/01-resource-group
+
+  sourceRef:
+    kind: GitRepository
+    name: tofu-demo
+    namespace: flux-system
+
+  interval: 5m
+  retryInterval: 20s
+
+  # Disable automatic apply (drift detection only)
+  approvePlan: "disable"
+
+  # Enable drift detection
+  disableDriftDetection: false
+
+  destroyResourcesOnDeletion: false
+  serviceAccountName: tf-runner
+
+  envFrom:
+    - secretRef:
+        name: azure-credentials
+
+  vars:
+    - name: location
+      value: centralus
+    - name: resource_group_name
+      value: tofu-drift-demo-rg
+
+  runnerPodTemplate:
+    spec:
+      image: ghcr.io/flux-iac/tf-runner-azure:v0.16.0-rc.4

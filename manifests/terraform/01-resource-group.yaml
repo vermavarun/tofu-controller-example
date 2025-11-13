@@ -1,0 +1,60 @@
+---
+# Terraform resource for Azure Resource Group
+# This is deployed first and other resources depend on it
+apiVersion: infra.contrib.fluxcd.io/v1alpha2
+kind: Terraform
+metadata:
+  name: azure-resource-group
+  namespace: flux-system
+spec:
+  # Path to the Terraform module in the repository
+  path: ./terraform/01-resource-group
+
+  # Source reference - the GitRepository to use
+  sourceRef:
+    kind: GitRepository
+    name: tofu-demo
+    namespace: flux-system
+
+  # Reconciliation interval
+  interval: 10m
+
+  # Retry interval on failure
+  retryInterval: 20s
+
+  # Auto-approve plans (GitOps automation mode)
+  approvePlan: auto
+
+  # Destroy resources on deletion of this object
+  destroyResourcesOnDeletion: true
+
+  # Service account to use for running Terraform
+  serviceAccountName: tf-runner
+
+  # Environment variables for Terraform (Azure credentials)
+  envFrom:
+    - secretRef:
+        name: azure-credentials
+
+  # Variables passed to Terraform
+  vars:
+    - name: location
+      value: eastus
+    - name: resource_group_name
+      value: tofu-demo-rg
+
+  # Write outputs to a secret
+  writeOutputsToSecret:
+    name: azure-rg-outputs
+
+  # Runner pod template
+  runnerPodTemplate:
+    spec:
+      image: ghcr.io/flux-iac/tf-runner-azure:v0.16.0-rc.4
+      resources:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
