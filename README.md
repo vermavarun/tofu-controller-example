@@ -294,22 +294,57 @@ spec:
 
 ## 🧹 Cleanup
 
-Remove all resources:
+### Option 1: Partial Cleanup (Keep Flux)
+
+Removes Terraform resources and Azure infrastructure, but keeps Flux installed:
 
 ```bash
-# Delete Terraform resources (this will destroy Azure resources)
+./scripts/98-cleanup.sh
+```
+
+This script:
+- ✓ Deletes Terraform custom resources (destroys Azure infrastructure)
+- ✓ Removes GitRepository sources
+- ✓ Optionally removes Tofu-Controller
+- ✓ Optionally removes Flux
+- ✓ Interactive prompts for each step
+
+### Option 2: Complete Cleanup (Remove Everything)
+
+**Completely resets your cluster to pre-demo state:**
+
+```bash
+./scripts/99-complete-cleanup.sh
+```
+
+This script removes **EVERYTHING**:
+- ❌ All Terraform resources (destroys Azure infrastructure)
+- ❌ All Kubernetes secrets
+- ❌ GitRepository sources
+- ❌ Tofu-Controller (including CRDs)
+- ❌ Flux (all components and CRDs)
+- ❌ flux-system namespace
+- ⚠️ **No interactive prompts - types 'yes' required**
+
+### Manual Cleanup (if needed)
+
+```bash
+# Delete Terraform resources manually
 kubectl delete -f manifests/terraform/
 
 # Delete sources
 kubectl delete -f manifests/sources/
 
-# Uninstall tofu-controller
-./scripts/98-cleanup.sh
+# Force delete namespace
+kubectl delete namespace flux-system --grace-period=0 --force
 
 # Delete the cluster (optional)
 kind delete cluster --name tofu-demo
 # OR
 az aks delete --resource-group tofu-demo-rg --name tofu-demo-cluster
+
+# Delete GitHub repository (if created)
+gh repo delete vermavarun/tofu-controller-example
 ```
 
 ## 🐛 Troubleshooting
